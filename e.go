@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 // TODO: Define minimal API for
@@ -28,7 +29,10 @@ import (
 // NOTE: This function must be called from the main thread.
 func Main(width, height int, title string) error {
 	world := &world{}
-	return ebiten.Run(world.update, width, height, 1, title)
+	if err := ebiten.Run(world.update, width, height, 1, title); err != nil {
+		return errutil.Err(err)
+	}
+	return nil
 }
 
 // world manages the active systems, and ensures that each system is updated
@@ -71,7 +75,7 @@ type ID uint64
 // data related to a specific aspect of an entity, such as its position in the
 // Cartesian coordinate system.
 type Component interface {
-	// Type returns the canonical string representation of the component type.
+	// Type returns the canonical string representation of the component's type.
 	// Conventionally this is equivalent to the name of the component's Go type;
 	// e.g. "PositionComponent".
 	Type() string
@@ -86,6 +90,6 @@ type System interface {
 	// Update is invoked once every frame, with dt being the duration since the
 	// previous call to update.
 	Update(dt time.Duration) error
-	// Remove removes the given entity from the system.
-	Remove(id ID)
+	// RemoveEntity removes the given entity from the system.
+	RemoveEntity(id ID)
 }

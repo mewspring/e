@@ -47,5 +47,3 @@ clean:
 
 _dump_/gendata/cutstart/cutstart.png: diabdat/gendata/cutstart.cel
 	cel_dump $(<:diabdat/%=%)
-
-.PHONY: gendata/cutstart.cel
