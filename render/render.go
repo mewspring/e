@@ -9,8 +9,8 @@ import (
 	"github.com/mewmew/e/ecs"
 )
 
-// A System implements logic for rendering entities containing a
-// render.Component.
+// A System implements logic for rendering visible entities to screen. A visible
+// entity is an entity containing a render.Component.
 type System struct {
 }
 
@@ -28,5 +28,5 @@ func (sys *System) Render(screen *ebiten.Image) error {
 // Ensure that System implements the ecs.System interface.
 var _ ecs.System = &System{}
 
-// Ensure that System implements the e.Renderer interface.
-var _ e.Renderer = &System{}
+// Ensure that System implements the e.RenderingSystem interface.
+var _ e.RenderingSystem = &System{}

@@ -60,7 +60,7 @@ func (e *engine) update(screen *ebiten.Image) error {
 
 	// Render with active rendering systems.
 	for _, system := range e.systems {
-		if system, ok := system.(Renderer); ok {
+		if system, ok := system.(RenderingSystem); ok {
 			if err := system.Render(screen); err != nil {
 				return errutil.Err(err)
 			}
