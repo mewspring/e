@@ -1,11 +1,40 @@
-// Package ecs provides interfaces for the ECS paradigm.
+// Package ecs provides interfaces for the Entity Component System (ECS)
+// paradigm.
 //
 // This package is heavily inspired by engo.io/ecs.
-package ecs
-
-// TODO: Extend top-level doc comment.
 //
-// ECS stands for Entity Component System...
+// The ECS paradigm aims to decouple distinct domains (e.g. rendering, input
+// handling, AI) from one another, through a composition of independent
+// components. The core concepts of ECS are described below.
+//
+//
+// Entities
+//
+// An entity is simply a set of components with a unique ID attached to it,
+// nothing more. In particular, an entity has no logic attached to it and stores
+// no data explicitly (except for the ID).
+//
+// Each entity corresponds to a specific entity within the game, such as a
+// character, an item, or a spell.
+//
+//
+// Components
+//
+// A component stores the raw data related to a specific aspect of an entity,
+// nothing more. In particular, a component has no logic attached to it.
+//
+// Different aspects may include the position, animation graphics, or input
+// actions of an entity.
+//
+//
+// Systems
+//
+// A system implements logic for processing entities possessing components of
+// the same aspects as the system.
+//
+// For instance, an animation system may render entities possessing animation
+// components.
+package ecs
 
 import (
 	"sync"
@@ -24,34 +53,47 @@ type Engine interface {
 	Systems() []System
 }
 
-// A System represents a system within the ECS paradigm. Systems implement logic
-// for dealing with entities possessing specific aspects (i.e. containing
-// specific components). For instance, a collision detection system may operate
-// on entities containing a "PositionComponent", which provides access to the
-// positional information of an entity.
+// A System implements logic for processing entities possessing components of
+// the same aspects as the system.
+//
+// By convention, systems provide an Add method for adding entities and their
+// associated components to the system; e.g.
+//
+//    Add(id ID, pos *Position)
 type System interface {
-	// Update updates the system. It is invoked once every frame, with dt being
-	// the duration since the previous update.
+	// Remove removes the given entity from the system.
+	Remove(id ID)
+}
+
+// An UpdateSystem periodically updates entities possessing components of the
+// same aspects as the system.
+type UpdateSystem interface {
+	System
+	// Update updates the system. It is invoked by the engine once every frame,
+	// with dt being the duration since the previous update.
 	Update(dt time.Duration) error
 }
 
-// A Component represents a component within the ECS paradigm. Components store
-// data related to a specific aspect of an entity, such as its position in the
-// Cartesian coordinate system.
-type Component interface {
-	// Type returns the canonical string representation of the component's type.
-	// Conventionally this is equivalent to the name of the component's Go type;
-	// e.g. "PositionComponent".
-	Type() string
+// An Entity is simply a set of components with a unique ID attached to it,
+// nothing more.
+type Entity interface {
+	// ID returns the unique identifier of the entity.
+	ID() ID
 }
 
-// An ID represents the unique identifier of an entity within the ECS paradigm.
-// An entity is nothing more than a set of components with an ID attached to it.
-// Each entity corresponds to a specific entity within the game, such as a
-// warrior, a healing potion or a door.
+// An ID represents the unique identifier of an entity.
 type ID struct {
 	// Entity ID.
 	id uint64
+}
+
+// NewID returns a new unique ID. It is safe for concurrent use.
+func NewID() ID {
+	gen.Lock()
+	id := gen.ID
+	gen.id++
+	gen.Unlock()
+	return id
 }
 
 // unique provides access to unique entity IDs.
@@ -62,12 +104,3 @@ type unique struct {
 
 // gen generates unique entity IDs.
 var gen unique
-
-// NewID returns a new unique ID. It is safe for concurrent use.
-func NewID() ID {
-	gen.Lock()
-	id := gen.ID
-	gen.id++
-	gen.Unlock()
-	return id
-}
