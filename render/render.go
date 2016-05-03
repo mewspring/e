@@ -2,31 +2,30 @@
 package render
 
 import (
-	"time"
+	"image/color"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewmew/e"
 	"github.com/mewmew/e/ecs"
 )
 
-// A System implements logic for rendering visible entities to screen. A visible
-// entity is an entity containing a render.Component.
+// A System periodically renders visible entities to screen. A visible entity is
+// an entity containing a render.Component.
 type System struct {
 }
 
-// Update updates the rendering system. It is invoked once every frame, with dt
-// being the duration since the previous update.
-func (sys *System) Update(dt time.Duration) error {
-	return nil
+// Remove removes the given entity from the system.
+func (sys *System) Remove(id ecs.ID) {
 }
 
 // Render renders visible entities to screen. It is invoked once every frame.
 func (sys *System) Render(screen *ebiten.Image) error {
+	if err := screen.Fill(color.RGBA{0, 0, 0, 0xFF}); err != nil {
+		return errutil.Err(err)
+	}
 	return nil
 }
 
-// Ensure that System implements the ecs.System interface.
-var _ ecs.System = &System{}
-
-// Ensure that System implements the e.RenderingSystem interface.
-var _ e.RenderingSystem = &System{}
+// Ensure that System implements the e.RenderSystem interface.
+var _ e.RenderSystem = &System{}

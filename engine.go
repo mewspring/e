@@ -20,6 +20,13 @@ type engine struct {
 	systems []ecs.System
 }
 
+// Remove removes the given entity from each system managed by the engine.
+func (e *engine) Remove(id ecs.ID) {
+	for _, system := range e.systems {
+		system.Remove(id)
+	}
+}
+
 // AddSystem adds the given system to the engine, sorted by priority.
 func (e *engine) AddSystem(system ecs.System) {
 	// TODO: Implement handling of system priority.
@@ -29,14 +36,6 @@ func (e *engine) AddSystem(system ecs.System) {
 // Systems returns the list of systems managed by the engine.
 func (e *engine) Systems() []ecs.System {
 	return e.systems
-}
-
-// Update updates each system of the engine.
-//
-// NOTE: The underlying ebiten engine is responsible for updating the game
-// engine, do not call this method directly.
-func (e *engine) Update(dt time.Duration) error {
-	panic("e.engine.Update: invalid call to Update. The underlying ebiten engine is responsible for updating the game engine, do not call this method directly.")
 }
 
 // update updates each system, and renders with each rendering system of the
@@ -49,8 +48,10 @@ func (e *engine) update(screen *ebiten.Image) error {
 
 	// Update active systems.
 	for _, system := range e.systems {
-		if err := system.Update(dt); err != nil {
-			return errutil.Err(err)
+		if system, ok := system.(ecs.UpdateSystem); ok {
+			if err := system.Update(dt); err != nil {
+				return errutil.Err(err)
+			}
 		}
 	}
 
@@ -60,7 +61,7 @@ func (e *engine) update(screen *ebiten.Image) error {
 
 	// Render with active rendering systems.
 	for _, system := range e.systems {
-		if system, ok := system.(RenderingSystem); ok {
+		if system, ok := system.(RenderSystem); ok {
 			if err := system.Render(screen); err != nil {
 				return errutil.Err(err)
 			}

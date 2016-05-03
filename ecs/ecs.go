@@ -65,8 +65,7 @@ type System interface {
 	Remove(id ID)
 }
 
-// An UpdateSystem periodically updates entities possessing components of the
-// same aspects as the system.
+// An UpdateSystem periodically updates relevant aspects of entities.
 type UpdateSystem interface {
 	System
 	// Update updates the system. It is invoked by the engine once every frame,
