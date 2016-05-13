@@ -37,8 +37,7 @@
 package ecs
 
 import (
-	"fmt"
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -87,23 +86,10 @@ type ID struct {
 	id uint64
 }
 
+// unique provides access to unique entity IDs, starting at 1.
+var unique uint64
+
 // NewID returns a new unique ID. It is safe for concurrent use.
 func NewID() ID {
-	gen.Lock()
-	prev := gen.ID
-	gen.id++
-	if gen.id == 0 {
-		panic(fmt.Sprintf("entity ID overflow detected; new ID (%d) < previous ID (%d)", gen.id, prev))
-	}
-	gen.Unlock()
-	return gen.ID
+	return ID{id: atomic.AddUint64(&unique, 1)}
 }
-
-// unique provides access to unique entity IDs.
-type unique struct {
-	ID
-	sync.Mutex
-}
-
-// gen generates unique entity IDs starting at 1.
-var gen unique
